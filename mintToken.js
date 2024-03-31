@@ -38,54 +38,71 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var web3_js_1 = require("@solana/web3.js");
 var spl_token_1 = require("@solana/spl-token");
+var fs = require("fs");
+var path = require("path");
+// 定义钱包文件路径
+var walletPath = path.join(__dirname, 'wallet.json');
 function createAndMintToken() {
     return __awaiter(this, void 0, void 0, function () {
-        var connection, fromWallet, airdropSignature, mint, tokenAccount, mintAmount, err_1;
+        var connection, fromWallet, walletData, balance, airdropSignature, mint, tokenAccount, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 6, , 7]);
-                    console.log("连接到Solana的开发网络...");
+                    _a.trys.push([0, 8, , 9]);
                     connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('devnet'), 'confirmed');
-                    console.log("已成功连接到Solana的开发网络");
-                    console.log("生成钱包密钥对...");
-                    fromWallet = web3_js_1.Keypair.generate();
-                    console.log("\u94B1\u5305\u5BC6\u94A5\u5BF9\u5DF2\u751F\u6210\uFF0C\u516C\u94A5\u4E3A: ".concat(fromWallet.publicKey.toString()));
-                    console.log("请求空投SOL...");
-                    return [4 /*yield*/, connection.requestAirdrop(fromWallet.publicKey, web3_js_1.LAMPORTS_PER_SOL // 相当于1 SOL
-                        )];
+                    console.log("连接到Solana的开发网络...");
+                    fromWallet = void 0;
+                    // 检查是否存在钱包文件
+                    if (fs.existsSync(walletPath)) {
+                        console.log("加载已有的钱包密钥对...");
+                        walletData = JSON.parse(fs.readFileSync(walletPath, 'utf-8'));
+                        fromWallet = web3_js_1.Keypair.fromSecretKey(new Uint8Array(walletData.secretKey));
+                    }
+                    else {
+                        console.log("生成新的钱包密钥对并保存...");
+                        fromWallet = web3_js_1.Keypair.generate();
+                        fs.writeFileSync(walletPath, JSON.stringify({
+                            publicKey: fromWallet.publicKey.toString(),
+                            secretKey: Array.from(fromWallet.secretKey)
+                        }, null, 2));
+                    }
+                    console.log("\u94B1\u5305\u516C\u94A5: ".concat(fromWallet.publicKey.toString()));
+                    return [4 /*yield*/, connection.getBalance(fromWallet.publicKey)];
                 case 1:
-                    airdropSignature = _a.sent();
-                    console.log("\u7A7A\u6295\u8BF7\u6C42\u5DF2\u53D1\u9001\uFF0C\u4EA4\u6613\u7B7E\u540D: ".concat(airdropSignature));
-                    console.log("确认交易...");
-                    return [4 /*yield*/, connection.confirmTransaction(airdropSignature, 'confirmed')];
+                    balance = _a.sent();
+                    console.log("\u5F53\u524DSOL\u4F59\u989D: ".concat(balance / web3_js_1.LAMPORTS_PER_SOL, " SOL"));
+                    if (!(balance < web3_js_1.LAMPORTS_PER_SOL)) return [3 /*break*/, 4];
+                    console.log("请求空投SOL...");
+                    return [4 /*yield*/, connection.requestAirdrop(fromWallet.publicKey, web3_js_1.LAMPORTS_PER_SOL)];
                 case 2:
-                    _a.sent();
-                    console.log("\u4EA4\u6613\u5DF2\u786E\u8BA4\uFF0C\u7B7E\u540D: ".concat(airdropSignature));
-                    console.log("创建新的代币mint...");
-                    return [4 /*yield*/, (0, spl_token_1.createMint)(connection, fromWallet, fromWallet.publicKey, null, 9 // 小数位数
-                        )];
+                    airdropSignature = _a.sent();
+                    return [4 /*yield*/, connection.confirmTransaction(airdropSignature, 'confirmed')];
                 case 3:
-                    mint = _a.sent();
-                    console.log("\u4EE3\u5E01mint\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740\u4E3A: ".concat(mint.toString()));
-                    console.log("创建与这个mint关联的token账户...");
-                    return [4 /*yield*/, (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, fromWallet, mint, fromWallet.publicKey)];
-                case 4:
-                    tokenAccount = _a.sent();
-                    console.log("\u4E0E\u4EE3\u5E01mint\u5173\u8054\u7684token\u8D26\u6237\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740\u4E3A: ".concat(tokenAccount.address.toString()));
-                    console.log("铸造新代币到刚创建的账户...");
-                    mintAmount = 8 * Math.pow(10, 9);
-                    return [4 /*yield*/, (0, spl_token_1.mintTo)(connection, fromWallet, mint, tokenAccount.address, fromWallet, mintAmount // 铸造的代币数量，已调整为888个代币
-                        )];
-                case 5:
                     _a.sent();
-                    console.log("\u5DF2\u6210\u529F\u94F8\u9020\u4EE3\u5E01\uFF0C\u6570\u91CF: 888\uFF0C\u94F8\u9020\u81F3\u8D26\u6237: ".concat(tokenAccount.address.toString()));
-                    return [3 /*break*/, 7];
+                    console.log("空投SOL已确认。");
+                    _a.label = 4;
+                case 4:
+                    console.log("创建新的代币mint...");
+                    return [4 /*yield*/, (0, spl_token_1.createMint)(connection, fromWallet, fromWallet.publicKey, null, 9)];
+                case 5:
+                    mint = _a.sent();
+                    console.log("\u4EE3\u5E01Mint\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740: ".concat(mint.toString()));
+                    console.log("创建与这个Mint关联的Token账户...");
+                    return [4 /*yield*/, (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, fromWallet, mint, fromWallet.publicKey)];
                 case 6:
+                    tokenAccount = _a.sent();
+                    console.log("Token\u8D26\u6237\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740: ".concat(tokenAccount.address.toString()));
+                    console.log("铸造新代币到刚创建的账户...");
+                    return [4 /*yield*/, (0, spl_token_1.mintTo)(connection, fromWallet, mint, tokenAccount.address, fromWallet, 8 * Math.pow(10, 9))];
+                case 7:
+                    _a.sent();
+                    console.log("代币铸造完成。");
+                    return [3 /*break*/, 9];
+                case 8:
                     err_1 = _a.sent();
                     console.error("脚本执行过程中发生错误:", err_1);
-                    return [3 /*break*/, 7];
-                case 7: return [2 /*return*/];
+                    return [3 /*break*/, 9];
+                case 9: return [2 /*return*/];
             }
         });
     });

@@ -47,22 +47,27 @@ function createAndMintToken() {
                     _a.trys.push([0, 6, , 7]);
                     console.log("连接到Solana的开发网络...");
                     connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('devnet'), 'confirmed');
+                    console.log("已成功连接到Solana的开发网络");
                     console.log("生成钱包密钥对...");
                     fromWallet = web3_js_1.Keypair.generate();
+                    console.log("\u94B1\u5305\u5BC6\u94A5\u5BF9\u5DF2\u751F\u6210\uFF0C\u516C\u94A5\u4E3A: ".concat(fromWallet.publicKey.toString()));
                     console.log("请求空投SOL...");
                     return [4 /*yield*/, connection.requestAirdrop(fromWallet.publicKey, web3_js_1.LAMPORTS_PER_SOL // 相当于1 SOL
                         )];
                 case 1:
                     airdropSignature = _a.sent();
+                    console.log("\u7A7A\u6295\u8BF7\u6C42\u5DF2\u53D1\u9001\uFF0C\u4EA4\u6613\u7B7E\u540D: ".concat(airdropSignature));
                     console.log("确认交易...");
                     return [4 /*yield*/, connection.confirmTransaction(airdropSignature)];
                 case 2:
                     _a.sent();
+                    console.log("\u4EA4\u6613\u5DF2\u786E\u8BA4\uFF0C\u7B7E\u540D: ".concat(airdropSignature));
                     console.log("创建新的代币mint...");
                     return [4 /*yield*/, (0, spl_token_1.createMint)(connection, fromWallet, fromWallet.publicKey, null, 9 // 小数位数
                         )];
                 case 3:
                     mint = _a.sent();
+                    console.log("\u4EE3\u5E01mint\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740\u4E3A: ".concat(mint.toString()));
                     console.log("创建与这个mint关联的token账户...");
                     return [4 /*yield*/, (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, fromWallet, mint, fromWallet.publicKey)];
                 case 4:
