@@ -10,8 +10,9 @@ const walletPath = path.join(__dirname, 'wallet.json');
 const initmintAmount = 99;
 
 async function createAndMintToken() {
+    console.log("Solana铸币开始...");
     try {
-        console.log("Solana铸币开始...");
+        
         const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
         console.log("连接到Solana的开发网络...");
 
@@ -74,6 +75,10 @@ async function createAndMintToken() {
             );
         console.log(`已成功铸造代币，数量: ${initmintAmount}，铸造至账户: ${tokenAccount.address.toString()}`);
 
+         // 打印代币账户的Solscan链接
+        console.log(`查看代币账户详情: https://solscan.io/account/${tokenAccount.address.toString()}?cluster=devnet`);
+
+    
     } catch (err) {
         console.error("脚本执行过程中发生错误:", err);
     }
