@@ -11,6 +11,7 @@ const initmintAmount = 99;
 
 async function createAndMintToken() {
     try {
+        console.log("Solana铸币开始...");
         const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
         console.log("连接到Solana的开发网络...");
 
