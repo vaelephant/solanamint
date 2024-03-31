@@ -1,12 +1,13 @@
 import { Connection, clusterApiUrl, Keypair, LAMPORTS_PER_SOL, AccountInfo } from '@solana/web3.js';
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import * as fs from 'fs';
-
 import * as path from 'path';
 
 
 // 定义钱包文件路径
 const walletPath = path.join(__dirname, 'wallet.json');
+//定义铸币个数
+const initmintAmount = 99;
 
 async function createAndMintToken() {
     try {
@@ -42,16 +43,35 @@ async function createAndMintToken() {
         }
 
         console.log("创建新的代币mint...");
-        const mint = await createMint(connection, fromWallet, fromWallet.publicKey, null, 9);
+        const mint = await createMint(
+            connection, 
+            fromWallet, 
+            fromWallet.publicKey, 
+            null, 
+            9 // 小数位数
+            );
         console.log(`代币Mint已创建，地址: ${mint.toString()}`);
 
         console.log("创建与这个Mint关联的Token账户...");
-        const tokenAccount = await getOrCreateAssociatedTokenAccount(connection, fromWallet, mint, fromWallet.publicKey);
-        console.log(`Token账户已创建，地址: ${tokenAccount.address.toString()}`);
+        const tokenAccount = await getOrCreateAssociatedTokenAccount(
+            connection, 
+            fromWallet, 
+            mint, 
+            fromWallet.publicKey
+            );
+        console.log(`与代币mint关联的token账户已创建，地址为: ${tokenAccount.address.toString()}`);
 
         console.log("铸造新代币到刚创建的账户...");
-        await mintTo(connection, fromWallet, mint, tokenAccount.address, fromWallet, 8 * Math.pow(10, 9));
-        console.log("代币铸造完成。");
+        const mintAmount = initmintAmount * Math.pow(10, 9); // 根据小数位数调整铸造数量
+        await mintTo(
+            connection, 
+            fromWallet, 
+            mint, 
+            tokenAccount.address, 
+            fromWallet, 
+            mintAmount
+            );
+        console.log(`已成功铸造代币，数量: ${initmintAmount}，铸造至账户: ${tokenAccount.address.toString()}`);
 
     } catch (err) {
         console.error("脚本执行过程中发生错误:", err);

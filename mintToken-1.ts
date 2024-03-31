@@ -39,6 +39,8 @@ async function createAndMintToken() {
             mint,
             fromWallet.publicKey
         );
+        console.log(`与代币mint关联的token账户已创建，地址为: ${tokenAccount.address.toString()}`);
+
 
         console.log("铸造新代币到刚创建的账户...");
         await mintTo(
