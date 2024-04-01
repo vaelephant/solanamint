@@ -42,13 +42,18 @@ var fs = require("fs");
 var path = require("path");
 // 定义钱包文件路径
 var walletPath = path.join(__dirname, 'wallet.json');
+//定义铸币个数
+var initmintAmount = 99;
 function createAndMintToken() {
     return __awaiter(this, void 0, void 0, function () {
-        var connection, fromWallet, walletData, balance, airdropSignature, mint, tokenAccount, err_1;
+        var connection, fromWallet, walletData, balance, airdropSignature, mint, tokenAccount, mintAmount, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 8, , 9]);
+                    console.log("Solana铸币开始...");
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 9, , 10]);
                     connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('devnet'), 'confirmed');
                     console.log("连接到Solana的开发网络...");
                     fromWallet = void 0;
@@ -68,41 +73,45 @@ function createAndMintToken() {
                     }
                     console.log("\u94B1\u5305\u516C\u94A5: ".concat(fromWallet.publicKey.toString()));
                     return [4 /*yield*/, connection.getBalance(fromWallet.publicKey)];
-                case 1:
+                case 2:
                     balance = _a.sent();
                     console.log("\u5F53\u524DSOL\u4F59\u989D: ".concat(balance / web3_js_1.LAMPORTS_PER_SOL, " SOL"));
-                    if (!(balance < web3_js_1.LAMPORTS_PER_SOL)) return [3 /*break*/, 4];
+                    if (!(balance < web3_js_1.LAMPORTS_PER_SOL)) return [3 /*break*/, 5];
                     console.log("请求空投SOL...");
                     return [4 /*yield*/, connection.requestAirdrop(fromWallet.publicKey, web3_js_1.LAMPORTS_PER_SOL)];
-                case 2:
+                case 3:
                     airdropSignature = _a.sent();
                     return [4 /*yield*/, connection.confirmTransaction(airdropSignature, 'confirmed')];
-                case 3:
+                case 4:
                     _a.sent();
                     console.log("空投SOL已确认。");
-                    _a.label = 4;
-                case 4:
-                    console.log("创建新的代币mint...");
-                    return [4 /*yield*/, (0, spl_token_1.createMint)(connection, fromWallet, fromWallet.publicKey, null, 9)];
+                    _a.label = 5;
                 case 5:
+                    console.log("创建新的代币mint...");
+                    return [4 /*yield*/, (0, spl_token_1.createMint)(connection, fromWallet, fromWallet.publicKey, null, 9 // 小数位数
+                        )];
+                case 6:
                     mint = _a.sent();
                     console.log("\u4EE3\u5E01Mint\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740: ".concat(mint.toString()));
                     console.log("创建与这个Mint关联的Token账户...");
                     return [4 /*yield*/, (0, spl_token_1.getOrCreateAssociatedTokenAccount)(connection, fromWallet, mint, fromWallet.publicKey)];
-                case 6:
-                    tokenAccount = _a.sent();
-                    console.log("Token\u8D26\u6237\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740: ".concat(tokenAccount.address.toString()));
-                    console.log("铸造新代币到刚创建的账户...");
-                    return [4 /*yield*/, (0, spl_token_1.mintTo)(connection, fromWallet, mint, tokenAccount.address, fromWallet, 8 * Math.pow(10, 9))];
                 case 7:
-                    _a.sent();
-                    console.log("代币铸造完成。");
-                    return [3 /*break*/, 9];
+                    tokenAccount = _a.sent();
+                    console.log("\u4E0E\u4EE3\u5E01mint\u5173\u8054\u7684token\u8D26\u6237\u5DF2\u521B\u5EFA\uFF0C\u5730\u5740\u4E3A: ".concat(tokenAccount.address.toString()));
+                    console.log("铸造新代币到刚创建的账户...");
+                    mintAmount = initmintAmount * Math.pow(10, 9);
+                    return [4 /*yield*/, (0, spl_token_1.mintTo)(connection, fromWallet, mint, tokenAccount.address, fromWallet, mintAmount)];
                 case 8:
+                    _a.sent();
+                    console.log("\u5DF2\u6210\u529F\u94F8\u9020\u4EE3\u5E01\uFF0C\u6570\u91CF: ".concat(initmintAmount, "\uFF0C\u94F8\u9020\u81F3\u8D26\u6237: ").concat(tokenAccount.address.toString()));
+                    // 打印代币账户的Solscan链接
+                    console.log("\u67E5\u770B\u4EE3\u5E01\u8D26\u6237\u8BE6\u60C5: https://solscan.io/account/".concat(tokenAccount.address.toString(), "?cluster=devnet"));
+                    return [3 /*break*/, 10];
+                case 9:
                     err_1 = _a.sent();
                     console.error("脚本执行过程中发生错误:", err_1);
-                    return [3 /*break*/, 9];
-                case 9: return [2 /*return*/];
+                    return [3 /*break*/, 10];
+                case 10: return [2 /*return*/];
             }
         });
     });
