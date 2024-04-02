@@ -2,6 +2,7 @@ import { Connection, clusterApiUrl, Keypair, LAMPORTS_PER_SOL, AccountInfo } fro
 import { createMint, getOrCreateAssociatedTokenAccount, mintTo } from '@solana/spl-token';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getAccount } from '@solana/spl-token';
 
 
 // 定义钱包文件路径
@@ -12,12 +13,12 @@ const initmintAmount = 99;
 async function createAndMintToken() {
     console.log("Solana铸币开始...");
     try {
-        
+
         const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
         console.log("连接到Solana的开发网络...");
 
         let fromWallet;
-        
+
         // 检查是否存在钱包文件
         if (fs.existsSync(walletPath)) {
             console.log("加载已有的钱包密钥对...");
@@ -46,39 +47,45 @@ async function createAndMintToken() {
 
         console.log("创建新的代币mint...");
         const mint = await createMint(
-            connection, 
-            fromWallet, 
-            fromWallet.publicKey, 
-            null, 
+            connection,
+            fromWallet,
+            fromWallet.publicKey,
+            null,
             9 // 小数位数
-            );
+        );
         console.log(`代币Mint已创建，地址: ${mint.toString()}`);
 
         console.log("创建与这个Mint关联的Token账户...");
         const tokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection, 
-            fromWallet, 
-            mint, 
+            connection,
+            fromWallet,
+            mint,
             fromWallet.publicKey
-            );
+        );
         console.log(`与代币mint关联的token账户已创建，地址为: ${tokenAccount.address.toString()}`);
 
         console.log("铸造新代币到刚创建的账户...");
         const mintAmount = initmintAmount * Math.pow(10, 9); // 根据小数位数调整铸造数量
         await mintTo(
-            connection, 
-            fromWallet, 
-            mint, 
-            tokenAccount.address, 
-            fromWallet, 
+            connection,
+            fromWallet,
+            mint,
+            tokenAccount.address,
+            fromWallet,
             mintAmount
-            );
+        );
         console.log(`已成功铸造代币，数量: ${initmintAmount}，铸造至账户: ${tokenAccount.address.toString()}`);
-
-         // 打印代币账户的Solscan链接
+        // 修改这里
+        try {
+            const tokenInfo = await getAccount(connection, tokenAccount.address);
+            console.log("Token account address:", tokenAccount.address.toString());
+            console.log("Token account balance:", tokenInfo.amount.toString());
+        } catch (error) {
+            console.error("获取代币账户信息时出错:", error);
+        }  // 打印代币账户的Solscan链接
         console.log(`查看代币账户详情: https://solscan.io/account/${tokenAccount.address.toString()}?cluster=devnet`);
 
-    
+
     } catch (err) {
         console.error("脚本执行过程中发生错误:", err);
     }

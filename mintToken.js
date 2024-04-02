@@ -40,20 +40,21 @@ var web3_js_1 = require("@solana/web3.js");
 var spl_token_1 = require("@solana/spl-token");
 var fs = require("fs");
 var path = require("path");
+var spl_token_2 = require("@solana/spl-token");
 // 定义钱包文件路径
 var walletPath = path.join(__dirname, 'wallet.json');
 //定义铸币个数
 var initmintAmount = 99;
 function createAndMintToken() {
     return __awaiter(this, void 0, void 0, function () {
-        var connection, fromWallet, walletData, balance, airdropSignature, mint, tokenAccount, mintAmount, err_1;
+        var connection, fromWallet, walletData, balance, airdropSignature, mint, tokenAccount, mintAmount, tokenInfo, error_1, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log("Solana铸币开始...");
                     _a.label = 1;
                 case 1:
-                    _a.trys.push([1, 9, , 10]);
+                    _a.trys.push([1, 13, , 14]);
                     connection = new web3_js_1.Connection((0, web3_js_1.clusterApiUrl)('devnet'), 'confirmed');
                     console.log("连接到Solana的开发网络...");
                     fromWallet = void 0;
@@ -104,14 +105,27 @@ function createAndMintToken() {
                 case 8:
                     _a.sent();
                     console.log("\u5DF2\u6210\u529F\u94F8\u9020\u4EE3\u5E01\uFF0C\u6570\u91CF: ".concat(initmintAmount, "\uFF0C\u94F8\u9020\u81F3\u8D26\u6237: ").concat(tokenAccount.address.toString()));
-                    // 打印代币账户的Solscan链接
-                    console.log("\u67E5\u770B\u4EE3\u5E01\u8D26\u6237\u8BE6\u60C5: https://solscan.io/account/".concat(tokenAccount.address.toString(), "?cluster=devnet"));
-                    return [3 /*break*/, 10];
+                    _a.label = 9;
                 case 9:
+                    _a.trys.push([9, 11, , 12]);
+                    return [4 /*yield*/, (0, spl_token_2.getAccount)(connection, tokenAccount.address)];
+                case 10:
+                    tokenInfo = _a.sent();
+                    console.log("Token account address:", tokenAccount.address.toString());
+                    console.log("Token account balance:", tokenInfo.amount.toString());
+                    return [3 /*break*/, 12];
+                case 11:
+                    error_1 = _a.sent();
+                    console.error("获取代币账户信息时出错:", error_1);
+                    return [3 /*break*/, 12];
+                case 12:
+                    console.log("\u67E5\u770B\u4EE3\u5E01\u8D26\u6237\u8BE6\u60C5: https://solscan.io/account/".concat(tokenAccount.address.toString(), "?cluster=devnet"));
+                    return [3 /*break*/, 14];
+                case 13:
                     err_1 = _a.sent();
                     console.error("脚本执行过程中发生错误:", err_1);
-                    return [3 /*break*/, 10];
-                case 10: return [2 /*return*/];
+                    return [3 /*break*/, 14];
+                case 14: return [2 /*return*/];
             }
         });
     });
